@@ -165,6 +165,18 @@ GaleriaPlantas(1);
 
 // Fecha galeria de plantas
 GaleriaPlantas(0);
+
+// Abre galeria de vídeos (vídeo 3D — video-gallery.html)
+AbrirGaleriaVideos(1);
+
+// Fecha galeria de vídeos
+AbrirGaleriaVideos(0);
+
+// Abre a ficha de diferenciais
+AbrirDiferenciais(1);
+
+// Fecha a ficha de diferenciais
+AbrirDiferenciais(0);
 ```
 
 ---
