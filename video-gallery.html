@@ -45,7 +45,7 @@
     #vg-header {
       display: flex;
       align-items: center;
-      justify-content: space-between;
+      justify-content: flex-end;
       padding: 10px 20px;
       border-bottom: 1px solid var(--border);
       flex-shrink: 0;
@@ -367,55 +367,22 @@
 
 <div id="vg-root">
   <header id="vg-header">
-    <div id="vg-tabs" role="tablist">
-      <button class="vg-tab active" data-tab="institucional" role="tab">Institucional</button>
-      <button class="vg-tab"       data-tab="conceito"      role="tab">Conceito</button>
-    </div>
-
     <button id="btn-close" title="Fechar" aria-label="Fechar"></button>
   </header>
 
   <!-- Tab: Institucional -->
   <div id="tab-institucional" class="tab-panel active" role="tabpanel">
     <video class="hero-player" data-tab="institucional"
-           src="assets/videos/legacy-video-3.mp4"
+           src="assets/VIDEO/V%C3%8DDEO%203D%20-%20MIRANDA%20DE%20CASTRO%20-%20COM%20FRASES.mp4"
            autoplay muted playsinline controls
            preload="auto">
     </video>
   </div>
 
-  <!-- Tab: Conceito -->
-  <div id="tab-conceito" class="tab-panel" role="tabpanel">
-    <video class="hero-player" data-tab="conceito"
-           src="assets/videos/conceito-01.mp4"
-           muted playsinline controls
-           preload="metadata">
-    </video>
-  </div>
 </div>
 
 <script>
-// ── abas: dois vídeos hero (Institucional + Conceito) ───────────
 const heroes = Array.from(document.querySelectorAll('.hero-player'));
-const heroFor = tab => heroes.find(v => v.dataset.tab === tab);
-
-document.querySelectorAll('.vg-tab').forEach(btn => {
-  btn.addEventListener('click', () => {
-    const tab = btn.dataset.tab;
-
-    document.querySelectorAll('.vg-tab').forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
-
-    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-    document.getElementById('tab-' + tab).classList.add('active');
-
-    // pausa os outros e toca o vídeo da aba ativa
-    heroes.forEach(v => { if (v.dataset.tab !== tab) v.pause(); });
-    const h = heroFor(tab);
-    if (h) h.play().catch(() => {});
-  });
-});
-
 // ── fechar ──────────────────────────────────────────────────────
 document.getElementById('btn-close').addEventListener('click', closeGallery);
 

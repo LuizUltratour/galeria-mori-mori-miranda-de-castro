@@ -927,6 +927,14 @@ const GALLERY_CONFIG = {
   categories: [
     { id: 'fachadas',     label: 'Fachadas' },
     { id: 'areas-comuns', label: 'Áreas Comuns' },
+    { id: 'apartamento',  label: 'Apartamento Decorado' },
+    {
+      id: 'plantas', label: 'Plantas',
+      subs: [
+        { id: 'pl-apartamentos', label: 'Apartamento' },
+        { id: 'pl-implantacao',  label: 'Implantação' },
+      ]
+    },
   ],
 
   items: [
@@ -968,6 +976,22 @@ const GALLERY_CONFIG = {
     { id:33, type:'image', category:'areas-comuns', title:'Academia Funcional', src:'assets/IMAGENS/Scene 36.png', thumb:'assets/thumbs/IMAGENS/Scene 36.jpg' },
     { id:34, type:'image', category:'areas-comuns', title:'Salão de Convivência', src:'assets/IMAGENS/Scene 37.png', thumb:'assets/thumbs/IMAGENS/Scene 37.jpg' },
     { id:35, type:'image', category:'areas-comuns', title:'Lounge', src:'assets/IMAGENS/Scene 38.png', thumb:'assets/thumbs/IMAGENS/Scene 38.jpg' },
+
+    // ═══ APARTAMENTO DECORADO ═══
+    { id:36, type:'image', category:'apartamento', title:'Sala de Estar', src:'assets/PLANTAS/Living 01.png', thumb:'assets/thumbs/PLANTAS/Living 01.jpg' },
+    { id:37, type:'image', category:'apartamento', title:'Sala de Jantar', src:'assets/PLANTAS/Living 02.png', thumb:'assets/thumbs/PLANTAS/Living 02.jpg' },
+    { id:38, type:'image', category:'apartamento', title:'Cozinha', src:'assets/PLANTAS/Cozinha.png', thumb:'assets/thumbs/PLANTAS/Cozinha.jpg' },
+    { id:39, type:'image', category:'apartamento', title:'Quarto Infantil 01', src:'assets/PLANTAS/Quarto 01.png', thumb:'assets/thumbs/PLANTAS/Quarto 01.jpg' },
+    { id:40, type:'image', category:'apartamento', title:'Quarto Infantil 02', src:'assets/PLANTAS/Quarto 02.png', thumb:'assets/thumbs/PLANTAS/Quarto 02.jpg' },
+    { id:41, type:'image', category:'apartamento', title:'Suíte 01', src:'assets/PLANTAS/Suíte 01.png', thumb:'assets/thumbs/PLANTAS/Suíte 01.jpg' },
+    { id:42, type:'image', category:'apartamento', title:'Suíte 02', src:'assets/PLANTAS/Suíte 02.png', thumb:'assets/thumbs/PLANTAS/Suíte 02.jpg' },
+    { id:43, type:'image', category:'apartamento', title:'Banheiro', src:'assets/PLANTAS/Banheiro.png', thumb:'assets/thumbs/PLANTAS/Banheiro.jpg' },
+
+    // ═══ PLANTAS ═══
+    { id:44, type:'image', category:'plantas', subCategory:'pl-apartamentos', isPlant:true, title:'Planta Humanizada 01', src:'assets/PLANTAS/Planta Humanizada.png', thumb:'assets/thumbs/PLANTAS/Planta Humanizada.jpg' },
+    { id:45, type:'image', category:'plantas', subCategory:'pl-apartamentos', isPlant:true, title:'Planta Humanizada 02', src:'assets/PLANTAS/Planta Humanizada 02.png', thumb:'assets/thumbs/PLANTAS/Planta Humanizada 02.jpg' },
+    { id:46, type:'image', category:'plantas', subCategory:'pl-implantacao', isPlant:true, title:'Implantação', src:'assets/PLANTAS/Scene 43.png', thumb:'assets/thumbs/PLANTAS/Scene 43.jpg' },
+    { id:47, type:'image', category:'plantas', subCategory:'pl-implantacao', isPlant:true, title:'Implantação (Sem Fundo)', src:'assets/PLANTAS/Scene 43 SEM FUNDO.png', thumb:'assets/thumbs/PLANTAS/Scene 43 SEM FUNDO.jpg' },
   ],
 };
 
@@ -1014,9 +1038,7 @@ const MODE = (() => {
 
 // Categorias exibidas no filtro principal conforme modo
 const DISPLAY_CATS = (() => {
-  if (MODE === 'plantas') return [
-    { id: 'pl-apartamentos', label: 'Apartamento' },
-  ];
+  if (MODE === 'plantas') return GALLERY_CONFIG.categories.find(c => c.id === 'plantas').subs;
   if (MODE === 'imagens') return GALLERY_CONFIG.categories.filter(c => c.id !== 'plantas');
   return GALLERY_CONFIG.categories;
 })();
@@ -1398,7 +1420,7 @@ function closeGallery() {
 function init() {
   // Filtro inicial depende do modo
   if (MODE === 'plantas') {
-    st.cat = 'pl-apartamentos';
+    st.cat = DISPLAY_CATS[0].id;
     st.sub = null;
   } else {
     st.cat = DISPLAY_CATS[0].id;               // 'areas-comuns'

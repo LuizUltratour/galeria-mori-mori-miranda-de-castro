@@ -13,3 +13,6 @@ assets/PLANTAS HUMANIZADAS/**/*.png
 !assets/PLANTAS HUMANIZADAS/PAVIMENTOS/
 !assets/PLANTAS HUMANIZADAS/PAVIMENTOS/*.png
 assets/IMAGENS/*.png
+
+# Video 3D (~320 MB) — so no S3
+assets/VIDEO/
