@@ -3,6 +3,7 @@
 
   var GALLERY_URL        = 'https://skylineip.s3.sa-east-1.amazonaws.com/Tour+Virtual/mori-mori/galeria-miranda-de-castro/index.html';
   var VIDEO_GALLERY_URL  = 'https://skylineip.s3.sa-east-1.amazonaws.com/Tour+Virtual/mori-mori/galeria-miranda-de-castro/video-gallery.html';
+  var GALERIA_360_URL    = 'https://skylineip.s3.sa-east-1.amazonaws.com/Tour+Virtual/mori-mori/galeria-miranda-de-castro/galeria-360.html';
   var DIFERENCIAIS_URL   = 'https://skylineip.s3.sa-east-1.amazonaws.com/Tour+Virtual/mori-mori/galeria-miranda-de-castro/diferenciais.html';
 
   var overlay    = null;
@@ -86,6 +87,33 @@
     iframe.src = VIDEO_GALLERY_URL + '?v=' + Date.now();
     iframe.style.cssText = 'width:100%;height:100%;border:none;display:block;background:#000;';
     iframe.setAttribute('allow', 'fullscreen; autoplay');
+
+    overlay.appendChild(iframe);
+    d.body.appendChild(overlay);
+
+    msgHandler = function (e) {
+      if (e.data && e.data.action === 'closeGallery') _close();
+    };
+    w.addEventListener('message', msgHandler);
+  };
+
+  // Galeria360(1) → abre galeria de imagens 360° (setas de navegação entre panoramas)
+  // Galeria360(0) → fecha
+  w.Galeria360 = function (show) {
+    if (show !== 1) { _close(); return; }
+    if (overlay) _close();
+    _injectStyles();
+
+    overlay = d.createElement('div');
+    overlay.id = '_gc_overlay';
+    overlay.style.cssText =
+      'position:fixed;inset:0;z-index:2147483646;' +
+      'animation:_gcIn 0.3s ease both;';
+
+    var iframe = d.createElement('iframe');
+    iframe.src = GALERIA_360_URL + '?v=' + Date.now();
+    iframe.style.cssText = 'width:100%;height:100%;border:none;display:block;background:#325825;';
+    iframe.setAttribute('allow', 'fullscreen; gyroscope; accelerometer');
 
     overlay.appendChild(iframe);
     d.body.appendChild(overlay);

@@ -52,6 +52,7 @@ else {
   Copy-Html 'inject.js'
   Copy-Html 'video-gallery.html'
   Copy-Html 'diferenciais.html'
+  Copy-Html 'galeria-360.html'
 }
 
 Write-Host 'Deploy concluido.' -ForegroundColor Green

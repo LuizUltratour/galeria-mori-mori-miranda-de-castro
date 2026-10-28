@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>Galeria 360° — Mori Mori — Miranda de Castro</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="assets/lib/pannellum/pannellum.css">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg: #325825;
+      --dark: #F2EBDD;
+      --gold: #B1904E;
+      --border: rgba(242,235,221,0.28);
+      --font-sans: 'Inter', system-ui, sans-serif;
+    }
+    html, body { height: 100%; overflow: hidden; background: var(--bg) url(assets/bg.png) center/cover no-repeat; color: var(--dark); font-family: var(--font-sans); }
+    #pano { position: fixed; inset: 0; width: 100%; height: 100%; }
+
+    .pnlm-panorama-info { display: none !important; }
+    .pnlm-zoom-controls { top: 84px !important; left: 14px !important; }
+
+    /* ── barra superior ── */
+    #top {
+      position: fixed; top: 0; left: 0; right: 0; z-index: 20;
+      display: flex; align-items: flex-start; justify-content: space-between; gap: 12px;
+      padding: 14px 18px; pointer-events: none;
+      background: linear-gradient(to bottom, rgba(0,0,0,0.45), transparent);
+    }
+    #title-box { pointer-events: none; text-shadow: 0 1px 8px rgba(0,0,0,0.6); }
+    #scene-title { font-size: 17px; font-weight: 500; letter-spacing: 0.04em; }
+    #scene-count { font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase; opacity: 0.75; margin-top: 3px; }
+    #btn-close {
+      pointer-events: auto; cursor: pointer; flex-shrink: 0;
+      width: 45px; height: 45px; border: none; border-radius: 0; padding: 0;
+      background: url(assets/close-normal.png) center/100% 100% no-repeat;
+    }
+    #btn-close:active { background-image: url(assets/close-hover.png); }
+    @media (hover: hover) { #btn-close:hover { background-image: url(assets/close-hover.png); } }
+
+    /* ── tira de miniaturas ── */
+    #strip-wrap { position: fixed; left: 0; right: 0; bottom: 0; z-index: 20; transition: transform 0.3s ease; }
+    #strip-wrap.collapsed { transform: translateY(calc(100% - 34px)); }
+    #strip-toggle {
+      display: block; margin: 0 auto; height: 34px; padding: 0 22px;
+      font: 500 11px var(--font-sans); letter-spacing: 0.14em; text-transform: uppercase;
+      color: #fff; background: var(--bg); border: 1px solid var(--border); border-bottom: none; cursor: pointer;
+    }
+    #strip {
+      display: flex; gap: 8px; overflow-x: auto; padding: 10px 14px 14px;
+      background: rgba(50,88,37,0.92); border-top: 1px solid var(--border);
+      scrollbar-width: thin;
+    }
+    .th {
+      flex: 0 0 auto; width: 124px; cursor: pointer; opacity: 0.7; border: 2px solid transparent;
+      background: #000; position: relative; transition: opacity 0.2s, border-color 0.2s;
+    }
+    .th img { display: block; width: 100%; height: 62px; object-fit: cover; }
+    .th span { position: absolute; left: 0; right: 0; bottom: 0; padding: 10px 5px 3px; font-size: 10px; line-height: 1.2; color: #fff; background: linear-gradient(transparent, rgba(0,0,0,0.75)); }
+    @media (hover: hover) { .th:hover { opacity: 1; } }
+    .th.active { opacity: 1; border-color: #fff; }
+
+    /* ── seta pulsante (hotspot) ── */
+    .pnlm-hotspot-base.hs-arrow {
+      width: 64px; height: 64px; margin: -32px 0 0 -32px;
+      background: none; border: none; border-radius: 0; cursor: pointer; overflow: visible;
+    }
+    .hs-arrow .arr {
+      position: absolute; inset: 8px; border-radius: 50%;
+      background: rgba(50,88,37,0.88); border: 2px solid #fff;
+      display: flex; align-items: center; justify-content: center;
+      box-shadow: 0 4px 14px rgba(0,0,0,0.45);
+      animation: arrBeat 1.6s ease-in-out infinite;
+    }
+    .hs-arrow .arr svg { width: 24px; height: 24px; fill: none; stroke: #fff; stroke-width: 3.2; stroke-linecap: round; stroke-linejoin: round; animation: arrNudge 1.6s ease-in-out infinite; }
+    .hs-arrow .ring {
+      position: absolute; inset: 8px; border-radius: 50%; border: 2px solid #fff; opacity: 0;
+      animation: arrRing 1.6s ease-out infinite;
+    }
+    .hs-arrow .lbl {
+      position: absolute; left: 50%; top: 100%; transform: translate(-50%, 2px);
+      white-space: nowrap; font: 500 12px var(--font-sans); letter-spacing: 0.04em; color: #fff;
+      background: rgba(0,0,0,0.65); padding: 4px 10px; border-radius: 2px;
+      opacity: 0; pointer-events: none; transition: opacity 0.2s;
+    }
+    @media (hover: hover) { .hs-arrow:hover .lbl { opacity: 1; } .hs-arrow:hover .arr { background: var(--gold); } }
+    @media (hover: none) { .hs-arrow .lbl { opacity: 0.95; font-size: 11px; } }
+    @keyframes arrBeat  { 0%,100% { transform: scale(1); } 50% { transform: scale(1.12); } }
+    @keyframes arrNudge { 0%,100% { transform: translateY(1px); } 50% { transform: translateY(-3px); } }
+    @keyframes arrRing  { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(1.9); opacity: 0; } }
+    @media (prefers-reduced-motion: reduce) { .hs-arrow .arr, .hs-arrow .arr svg, .hs-arrow .ring { animation: none; } }
+
+    /* ── modo editor (?edit=1) ── */
+    #editor {
+      display: none; position: fixed; top: 74px; right: 14px; z-index: 30; width: 310px; max-height: calc(100vh - 220px); overflow-y: auto;
+      background: rgba(20,30,16,0.94); border: 1px solid var(--border); padding: 12px; font-size: 12px; line-height: 1.45;
+    }
+    body.edit #editor { display: block; }
+    #editor h3 { font-size: 12px; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 6px; color: var(--gold); }
+    #editor p { opacity: 0.85; margin-bottom: 8px; }
+    #editor select, #editor textarea, #editor button { width: 100%; font: 12px var(--font-sans); padding: 7px; margin-bottom: 6px; border: 1px solid var(--border); background: #1c2a17; color: #fff; }
+    #editor button { cursor: pointer; background: var(--gold); border-color: var(--gold); color: #1c2a17; font-weight: 600; }
+    #editor button.sec { background: transparent; color: #fff; border-color: var(--border); }
+    #editor button:disabled { opacity: 0.4; cursor: default; }
+    #editor label { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; cursor: pointer; }
+    #editor label input { width: auto; margin: 0; }
+    #editor textarea { height: 120px; resize: vertical; font-family: ui-monospace, Consolas, monospace; font-size: 11px; }
+    .lk { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 4px 0; border-bottom: 1px solid var(--border); }
+    .lk button { width: auto; margin: 0; padding: 2px 8px; }
+    #pending { position: fixed; z-index: 15; width: 14px; height: 14px; margin: -7px 0 0 -7px; border-radius: 50%; background: #ff3b3b; border: 2px solid #fff; display: none; pointer-events: none; }
+    @media (max-width: 700px) {
+      #scene-title { font-size: 14px; }
+      .th { width: 100px; }
+      .th img { height: 50px; }
+      #editor { width: calc(100vw - 28px); max-height: 45vh; top: auto; bottom: 150px; }
+    }
+  </style>
+</head>
+<body>
+
+<div id="pano"></div>
+<div id="pending"></div>
+
+<div id="top">
+  <div id="title-box">
+    <div id="scene-title"></div>
+    <div id="scene-count"></div>
+  </div>
+  <button id="btn-close" title="Fechar galeria" aria-label="Fechar"></button>
+</div>
+
+<div id="strip-wrap">
+  <button id="strip-toggle" type="button">Locais</button>
+  <div id="strip"></div>
+</div>
+
+<!-- Modo editor: abra com ?edit=1 -->
+<div id="editor">
+  <h3>Editor de setas</h3>
+  <p><b>1.</b> Gire o panorama e <b>clique</b> no ponto onde a seta deve ficar (marcador vermelho).<br>
+     <b>2.</b> Escolha o destino e clique em "Adicionar seta".</p>
+  <select id="ed-dest"></select>
+  <label><input type="checkbox" id="ed-back"> Criar também a volta (direção oposta, ajuste depois)</label>
+  <button id="ed-add" disabled>Adicionar seta aqui</button>
+  <h3 style="margin-top:8px">Setas desta cena</h3>
+  <div id="ed-list"></div>
+  <h3 style="margin-top:10px">Configuração</h3>
+  <textarea id="ed-json" readonly></textarea>
+  <button id="ed-copy">Copiar configuração</button>
+  <button id="ed-reset" class="sec">Apagar edições locais</button>
+</div>
+
+<script src="assets/lib/pannellum/pannellum.js"></script>
+<script>
+// ================================================================
+// CONFIGURAÇÃO DA GALERIA 360°
+// Panoramas equirretangulares otimizados em assets/360/web/*.jpg
+// (originais .png ficam só no S3). Miniaturas em assets/thumbs/360/.
+// ================================================================
+const SCENES = [
+  { id:'s01', title:'Acesso Principal',        file:'Scene 01' },
+  { id:'s02', title:'Entrada e Avenida',       file:'Scene 02' },
+  { id:'s03', title:'Estacionamento',          file:'Scene 03' },
+  { id:'s04', title:'Pérgola e Estacionamento',file:'Scene 04' },
+  { id:'s05', title:'Jardim e Torres',         file:'Scene 05' },
+  { id:'s06', title:'Playground',              file:'Scene 06' },
+  { id:'s07', title:'Quadra de Areia',         file:'Scene 07' },
+  { id:'s08', title:'Estacionamento Central',  file:'Scene 08' },
+  { id:'s09', title:'Via de Acesso',           file:'Scene 09' },
+  { id:'s10', title:'Piscina',                 file:'Scene 10' },
+  { id:'s11', title:'Deck da Piscina',         file:'Scene 11' },
+  { id:'s12', title:'Pérgola e Gramado',       file:'Scene 12' },
+  { id:'s13', title:'Estacionamento e Comércio',file:'Scene 13' },
+  { id:'s14', title:'Espaço Gourmet',          file:'Scene 14' },
+  { id:'s15', title:'Praça Central',           file:'Scene 15' },
+  { id:'s16', title:'Varanda 01',              file:'Scene 16' },
+  { id:'s17', title:'Varanda 02',              file:'Scene 17' },
+];
+
+// Setas de navegação — { de cena → para cena } com pitch/yaw (graus).
+// Gere/edite com o modo editor (index: galeria-360.html?edit=1) e cole o JSON aqui.
+const LINKS = {
+  // s01: [ { to:'s02', pitch:-18, yaw:95 } ],
+};
+
+// ================================================================
+// ENGINE
+// ================================================================
+const $ = id => document.getElementById(id);
+const params = new URLSearchParams(location.search);
+const EDIT = params.get('edit') === '1';
+const LS_KEY = 'g360-links-miranda';
+const byId = Object.fromEntries(SCENES.map(s => [s.id, s]));
+const enc = f => 'assets/360/web/' + encodeURIComponent(f) + '.jpg';
+const encT = f => 'assets/thumbs/360/' + encodeURIComponent(f) + '.jpg';
+
+let links = JSON.parse(JSON.stringify(LINKS));
+if (EDIT) {
+  try { const saved = JSON.parse(localStorage.getItem(LS_KEY) || 'null'); if (saved) links = saved; } catch (_) {}
+  document.body.classList.add('edit');
+}
+const saveLocal = () => { try { localStorage.setItem(LS_KEY, JSON.stringify(links)); } catch (_) {} };
+
+let viewer = null, current = null;
+
+// hotspot: seta pulsante
+function arrowTip(div, args) {
+  div.innerHTML = '<span class="ring"></span><span class="arr"><svg viewBox="0 0 24 24"><path d="M5 15l7-7 7 7"/></svg></span><span class="lbl"></span>';
+  div.querySelector('.lbl').textContent = args.label;
+}
+
+function go(id, keepYaw) {
+  if (!byId[id] || id === current) return;
+  const yaw = keepYaw !== undefined ? keepYaw : undefined;
+  viewer.loadScene(id, 0, yaw, viewer.getHfov());
+}
+
+function hsFor(sceneId, lk, idx) {
+  const dest = byId[lk.to];
+  return {
+    id: 'hs-' + sceneId + '-' + idx,
+    type: 'custom', pitch: lk.pitch, yaw: lk.yaw,
+    cssClass: 'hs-arrow',
+    createTooltipFunc: arrowTip,
+    createTooltipArgs: { label: dest ? dest.title : lk.to },
+    clickHandlerFunc: () => go(lk.to, viewer.getYaw()),
+  };
+}
+
+function buildScenes() {
+  const scenes = {};
+  SCENES.forEach(s => {
+    scenes[s.id] = {
+      title: s.title,
+      type: 'equirectangular',
+      panorama: enc(s.file),
+      hfov: 100,
+      pitch: 0,
+      yaw: 0,
+      hotSpots: (links[s.id] || []).map((lk, i) => hsFor(s.id, lk, i)),
+    };
+  });
+  return scenes;
+}
+
+function renderStrip() {
+  const el = $('strip');
+  SCENES.forEach(s => {
+    const d = document.createElement('div');
+    d.className = 'th'; d.dataset.id = s.id;
+    d.innerHTML = '<img loading="lazy" alt=""><span></span>';
+    d.querySelector('img').src = encT(s.file);
+    d.querySelector('span').textContent = s.title;
+    d.addEventListener('click', () => go(s.id));
+    el.appendChild(d);
+  });
+}
+
+function onScene(id) {
+  current = id;
+  const idx = SCENES.findIndex(s => s.id === id);
+  $('scene-title').textContent = byId[id].title;
+  $('scene-count').textContent = (idx + 1) + ' / ' + SCENES.length;
+  document.querySelectorAll('.th').forEach(t => {
+    const on = t.dataset.id === id;
+    t.classList.toggle('active', on);
+    if (on) t.scrollIntoView({ block: 'nearest', inline: 'center', behavior: 'smooth' });
+  });
+  // pré-carrega destinos desta cena
+  (links[id] || []).forEach(lk => { if (byId[lk.to]) { const i = new Image(); i.src = enc(byId[lk.to].file); } });
+  if (EDIT) { clearPending(); renderEditor(); }
+}
+
+// ── fechar ──────────────────────────────────────────────────────
+function closeGallery() {
+  if (window.parent !== window) window.parent.postMessage({ action: 'closeGallery' }, '*');
+  else if (history.length > 1) history.back();
+  else window.close();
+}
+$('btn-close').addEventListener('click', closeGallery);
+$('strip-toggle').addEventListener('click', () => $('strip-wrap').classList.toggle('collapsed'));
+
+// ── editor ──────────────────────────────────────────────────────
+let pending = null;
+function clearPending() { pending = null; $('pending').style.display = 'none'; $('ed-add').disabled = true; }
+
+function reloadHotspots(sceneId) {
+  // remove os existentes e recria a partir de links[sceneId]
+  const cfg = viewer.getConfig();
+  const old = (cfg.scenes && cfg.scenes[sceneId] && cfg.scenes[sceneId].hotSpots) || [];
+  old.slice().forEach(h => { try { viewer.removeHotSpot(h.id, sceneId); } catch (_) {} });
+  (links[sceneId] || []).forEach((lk, i) => viewer.addHotSpot(hsFor(sceneId, lk, i), sceneId));
+}
+
+function renderEditor() {
+  const sel = $('ed-dest');
+  if (!sel.options.length) SCENES.forEach(s => sel.add(new Option(s.title, s.id)));
+  Array.from(sel.options).forEach(o => { o.disabled = o.value === current; });
+  if (sel.value === current) sel.value = (SCENES.find(s => s.id !== current) || {}).id;
+  const list = $('ed-list'); list.innerHTML = '';
+  const ls = links[current] || [];
+  if (!ls.length) list.innerHTML = '<p>Nenhuma seta ainda.</p>';
+  ls.forEach((lk, i) => {
+    const row = document.createElement('div'); row.className = 'lk';
+    const t = document.createElement('span'); t.textContent = '→ ' + (byId[lk.to] ? byId[lk.to].title : lk.to);
+    const b = document.createElement('button'); b.textContent = 'Remover';
+    b.addEventListener('click', () => { links[current].splice(i, 1); saveLocal(); reloadHotspots(current); renderEditor(); });
+    row.append(t, b); list.appendChild(row);
+  });
+  const clean = {};
+  Object.keys(links).forEach(k => { if (links[k].length) clean[k] = links[k]; });
+  $('ed-json').value = 'const LINKS = ' + JSON.stringify(clean, null, 1).replace(/\n\s*/g, m => m.includes('\n') ? '\n  ' : m) + ';';
+}
+
+if (EDIT) {
+  const panoEl = $('pano');
+  let down = null;
+  panoEl.addEventListener('mousedown', e => { down = { x: e.clientX, y: e.clientY }; });
+  panoEl.addEventListener('mouseup', e => {
+    if (!down || e.target.closest('.hs-arrow')) { down = null; return; }
+    const moved = Math.hypot(e.clientX - down.x, e.clientY - down.y); down = null;
+    if (moved > 5) return;
+    const [pitch, yaw] = viewer.mouseEventToCoords(e);
+    pending = { pitch: Math.round(pitch * 10) / 10, yaw: Math.round(yaw * 10) / 10 };
+    const p = $('pending'); p.style.left = e.clientX + 'px'; p.style.top = e.clientY + 'px'; p.style.display = 'block';
+    $('ed-add').disabled = false;
+  });
+  // some o marcador ao girar (a posição em tela deixaria de valer)
+  ['mousewheel', 'touchmove'].forEach(ev => panoEl.addEventListener(ev, () => { $('pending').style.display = 'none'; }, { passive: true }));
+  panoEl.addEventListener('mousemove', e => { if (down && Math.hypot(e.clientX - down.x, e.clientY - down.y) > 5) $('pending').style.display = 'none'; });
+
+  $('ed-add').addEventListener('click', () => {
+    if (!pending) return;
+    const to = $('ed-dest').value;
+    (links[current] = links[current] || []).push({ to, pitch: pending.pitch, yaw: pending.yaw });
+    if ($('ed-back').checked) {
+      let y = pending.yaw + 180; if (y > 180) y -= 360;
+      (links[to] = links[to] || []).push({ to: current, pitch: -18, yaw: Math.round(y * 10) / 10 });
+    }
+    saveLocal(); reloadHotspots(current); clearPending(); renderEditor();
+  });
+  $('ed-copy').addEventListener('click', () => {
+    const ta = $('ed-json'); ta.removeAttribute('readonly'); ta.select();
+    try { document.execCommand('copy'); } catch (_) {}
+    ta.setAttribute('readonly', ''); $('ed-copy').textContent = 'Copiado!';
+    setTimeout(() => { $('ed-copy').textContent = 'Copiar configuração'; }, 1500);
+  });
+  $('ed-reset').addEventListener('click', () => {
+    if (!$('ed-reset').dataset.sure) { $('ed-reset').dataset.sure = '1'; $('ed-reset').textContent = 'Clique de novo para confirmar'; return; }
+    try { localStorage.removeItem(LS_KEY); } catch (_) {}
+    location.reload();
+  });
+}
+
+// ── init ─────────────────────────────────────────────────────────
+renderStrip();
+const first = byId[params.get('scene')] ? params.get('scene') : SCENES[0].id;
+viewer = pannellum.viewer('pano', {
+  default: { firstScene: first, sceneFadeDuration: 900, autoLoad: true, showControls: true, showFullscreenCtrl: false, compass: false, minHfov: 50, maxHfov: 120 },
+  scenes: buildScenes(),
+});
+viewer.on('scenechange', onScene);
+viewer.on('load', () => { if (current === null) onScene(first); });
+</script>
+</body>
+</html>

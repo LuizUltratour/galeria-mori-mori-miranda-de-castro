@@ -16,3 +16,6 @@ assets/IMAGENS/*.png
 
 # Video 3D (~320 MB) — so no S3
 assets/VIDEO/
+
+# Panoramas 360 originais (~16 MB cada) — so no S3; no git ficam 360/web/ e thumbs/360/
+assets/360/*.png

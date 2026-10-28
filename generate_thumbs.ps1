@@ -28,7 +28,7 @@ $jpgEnc = [System.Drawing.Imaging.ImageCodecInfo]::GetImageEncoders() | Where-Ob
 
 $imgs = Get-ChildItem -LiteralPath $assets -Recurse -File |
         Where-Object { $_.Extension -match '(?i)\.(jpe?g|png)$' -and
-                       $_.FullName -notmatch '[\\/](thumbs|large|videos)[\\/]' -and
+                       $_.FullName -notmatch '[\\/](thumbs|large|videos|360|lib)[\\/]' -and
                        $_.Name -notmatch '^close-' }
 
 $made = 0; $skip = 0

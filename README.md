@@ -13,6 +13,7 @@ Galeria de imagens/plantas/vídeos para injeção via script no 3DVista, hospeda
 |---------|-----|
 | Galeria | `https://skylineip.s3.sa-east-1.amazonaws.com/Tour+Virtual/mori-mori/galeria-miranda-de-castro/index.html` |
 | Vídeos  | `https://skylineip.s3.sa-east-1.amazonaws.com/Tour+Virtual/mori-mori/galeria-miranda-de-castro/video-gallery.html` |
+| 360°    | `https://skylineip.s3.sa-east-1.amazonaws.com/Tour+Virtual/mori-mori/galeria-miranda-de-castro/galeria-360.html` |
 | Script  | `https://skylineip.s3.sa-east-1.amazonaws.com/Tour+Virtual/mori-mori/galeria-miranda-de-castro/inject.js` |
 
 **S3 path:** `s3://skylineip/Tour Virtual/mori-mori/galeria-miranda-de-castro/`
@@ -25,6 +26,7 @@ Galeria de imagens/plantas/vídeos para injeção via script no 3DVista, hospeda
 galeria/  (Mori Mori / Miranda de Castro)
 ├── index.html              ← galeria de imagens + plantas (auto-suficiente)
 ├── video-gallery.html      ← galeria de vídeos (vídeo 3D único)
+├── galeria-360.html        ← galeria de panoramas 360° (setas pulsantes + editor)
 ├── diferenciais.html       ← ficha de diferenciais (scroll)
 ├── inject.js               ← loader leve para injeção no 3DVista
 ├── deploy.ps1              ← deploy para o S3 (Windows; sync)
@@ -33,6 +35,8 @@ galeria/  (Mori Mori / Miranda de Castro)
 └── assets/
     ├── IMAGENS/              ← renders: fachadas e áreas comuns (Fachada *.png, Scene NN.png)
     ├── PLANTAS/              ← apartamento decorado, plantas humanizadas e implantação
+    ├── 360/                  ← panoramas equirretangulares 4096×2048 (Scene 01–17.png, só no S3) e web/*.jpg otimizados
+    ├── lib/pannellum/        ← Pannellum 2.5.6 (visualizador 360°, hospedado junto)
     ├── VIDEO/                ← vídeo 3D .mp4 (gitignored; direto no S3)
     ├── bg.png                ← imagem de fundo da galeria
     ├── close-*, voltar-*, proximo-*.png ← botões (normal/hover), exibidos em 45×45 px
@@ -177,7 +181,40 @@ AbrirDiferenciais(1);
 
 // Fecha a ficha de diferenciais
 AbrirDiferenciais(0);
+
+// Abre a galeria 360° (galeria-360.html)
+Galeria360(1);
+
+// Fecha a galeria 360°
+Galeria360(0);
 ```
+
+---
+
+## Galeria 360° (`galeria-360.html`)
+
+17 panoramas equirretangulares (`assets/360/Scene 01–17.png`, 4096×2048). Cada local mostra **setas pulsantes**; ao clicar, abre o panorama do destino mantendo a direção do olhar. Tira de miniaturas ("Locais") embaixo para ir direto a qualquer ponto. Usa [Pannellum](https://pannellum.org) 2.5.6 (`assets/lib/pannellum/`).
+
+### Preparar os arquivos
+
+Coloque os PNGs em `assets/360/` e gere as versões web (JPEG ~2,4 MB) e miniaturas:
+
+```bash
+for f in assets/360/Scene*.png; do b=$(basename "$f" .png)
+  ffmpeg -y -i "$f" -q:v 3 "assets/360/web/$b.jpg"
+  ffmpeg -y -i "$f" -vf scale=480:-1 -q:v 4 "assets/thumbs/360/$b.jpg"
+done
+```
+
+Os títulos dos locais ficam no array `SCENES` do HTML.
+
+### Posicionar as setas (modo editor)
+
+1. Abra `galeria-360.html?edit=1` (servindo a pasta por HTTP ou já no S3).
+2. Gire o panorama e **clique** onde a seta deve ficar (marcador vermelho) → escolha o destino → **Adicionar seta aqui**. A opção "Criar também a volta" cria a seta de retorno na direção oposta (ajuste depois se precisar).
+3. As edições ficam salvas no navegador (localStorage). Ao terminar, clique em **Copiar configuração** e cole o resultado no `const LINKS = {...}` do HTML; depois rode o deploy.
+
+Para abrir direto num local: `galeria-360.html?scene=s05`.
 
 ---
 
