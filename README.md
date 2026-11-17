@@ -64,13 +64,13 @@ galeria/  (Mori Mori / Miranda de Castro)
 | Tipologia | Label | Pasta | Formato |
 |-----------|-------|-------|---------|
 | `pl-apartamentos` | Apartamento | `assets/PLANTAS/` | Planta Humanizada 01 e 02 |
-| `pl-implantacao`  | Implantação | `assets/PLANTAS/` | Implantação (com e sem fundo) |
+| `pl-implantacao`  | Implantação | `assets/PLANTAS/` | Implantação aérea |
 
 > No modo `all` (padrão) as plantas aparecem como categoria "Plantas" com os dois sub-filtros acima.
 
 ### Vídeos
 
-`video-gallery.html` toca um único vídeo 3D (`assets/VIDEO/VÍDEO 3D - MIRANDA DE CASTRO - COM FRASES.mp4`, ~320 MB, vertical 2160×3884). O arquivo é grande demais para o GitHub: fica só no S3 (`assets/VIDEO/` está no .gitignore).
+`video-gallery.html` toca um único vídeo 3D (`assets/VIDEO/VÍDEO 3D - MIRANDA DE CASTRO.mp4`, ~320 MB, vertical 2160×3884). O arquivo é grande demais para o GitHub: fica só no S3 (`assets/VIDEO/` está no .gitignore).
 
 ---
 
